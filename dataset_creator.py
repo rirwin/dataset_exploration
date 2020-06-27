@@ -24,6 +24,25 @@ from operator import add
 from pyspark.sql import SparkSession
 
 
+INFILES = [
+    'business_test.json',  # business should be first, it's left joined later
+    'review_test.json', 
+    'checkin_test.json', 
+    'tip_test.json'
+]
+
+
+INFILE_TO_TYPE = {
+    'business_small.json': 'BUSINESS',
+    'business_test.json': 'BUSINESS',
+    'review_small.json': 'REVIEW',
+    'review_test.json': 'REVIEW',
+    'checkin_small.json': 'CHECKIN',
+    'checkin_test.json': 'CHECKIN',
+    'tip_test.json': 'TIP',
+}
+
+
 def process_dict(d, d_type):
     if d_type == 'BUSINESS':
         entry = {
@@ -52,11 +71,13 @@ def process_dict(d, d_type):
         }    
     return [entry]
 
+
 def create_df_from_file(spark, infile):
     rdd = spark.read.json(infile).rdd \
-        .map(lambda d: (d['business_id'], process_dict(d, infile_to_type[infile]))) \
+        .map(lambda d: (d['business_id'], process_dict(d, INFILE_TO_TYPE[infile]))) \
         .reduceByKey(lambda data1, data2: data1 + data2)
-    return spark.createDataFrame(rdd, ['business_id', infile_to_type[infile]])
+    return spark.createDataFrame(rdd, ['business_id', INFILE_TO_TYPE[infile]])
+
 
 def join_df_on_business_id(dfs):
     return reduce(lambda df1, df2: df1.join(df2, ['business_id'], 'left_outer'), dfs)
@@ -64,34 +85,10 @@ def join_df_on_business_id(dfs):
 
 if __name__ == "__main__":
 
-    spark = SparkSession\
-        .builder\
-        .appName("YelpBusinessMapper")\
-        .getOrCreate()
+    spark = SparkSession.builder.appName("YelpBusinessMapper").getOrCreate()
 
-    infile_to_type = {
-        'business_small.json': 'BUSINESS',
-        'business_test.json': 'BUSINESS',
-        'review_small.json': 'REVIEW',
-        'review_test.json': 'REVIEW',
-        'checkin_small.json': 'CHECKIN',
-        'checkin_test.json': 'CHECKIN',
-        'tip_test.json': 'TIP',
-    }
-
-    business_df = create_df_from_file(spark, 'business_test.json')
-    business_reviews_df = create_df_from_file(spark, 'review_test.json')
-    business_checkins_df = create_df_from_file(spark, 'checkin_test.json')
-    business_tips_df = create_df_from_file(spark, 'tip_test.json')
-
-    df = join_df_on_business_id([
-        business_df, 
-        business_reviews_df, 
-        business_checkins_df,
-        business_tips_df,
-    ])
-
-    # consider repartion
+    dfs = [create_df_from_file(spark, infile) for infile in INFILES]
+    df = join_df_on_business_id(dfs)
     df.write.json('test_write')
 
     spark.stop()
