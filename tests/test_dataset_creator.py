@@ -1,9 +1,7 @@
 import unittest
 from parameterized import parameterized
 
-from dataset_creator import match_infile_to_type
-from dataset_creator import parse_args
-from dataset_creator import process_dict
+from batch.dataset_creator import DatasetCreatorSparkBatch
 
 
 BIZ_ID = 'IXAV123'
@@ -18,10 +16,13 @@ TEXT = 'Great Pizza'
 
 
 class DatasetTestCase(unittest.TestCase):
-    
+
+    def setUp(self):
+        self.batch = DatasetCreatorSparkBatch()
+
     def test_parse_args(self):
         infiles = 'business.json review.json tip.json checkin.json'
-        args = parse_args(['--infiles'] + infiles.split(' '))
+        args = self.batch.parse_args(['--infiles'] + infiles.split(' '))
         self.assertEqual(args.infiles, infiles.split(' '))
 
     @parameterized.expand([
@@ -31,15 +32,19 @@ class DatasetTestCase(unittest.TestCase):
         ['review', 's3://bucket/a_review_file1.json', 'REVIEW'],
     ])
     def test_match_infile_to_type(self, name, infile, expected_type):
-        self.assertEqual(match_infile_to_type(infile), expected_type)
- 
+        self.assertEqual(self.batch.match_infile_to_type(infile), expected_type)
+
+    def test_match_infile_to_type_invalid(self):
+        with self.assertRaises(Exception):
+            self.batch.match_infile_to_type('s3://blah.json')
+
     @parameterized.expand([
         [
             {'business_id': BIZ_ID, 'name': NAME, 'city': CITY, 'state': STATE},
             'BUSINESS',
             [{'business_id': BIZ_ID, 'name': NAME, 'city': CITY, 'state': STATE}]
         ],
-        [    
+        [
             {'business_id': BIZ_ID, 'user_id': USER_ID, 'review_id': REVIEW_ID, 'date': TS, 'stars': 5, 'text':TEXT},
             'REVIEW',
             [{'business_id': BIZ_ID, 'user_id': USER_ID, 'review_id': REVIEW_ID, 'timestamp': TS, 'star_rating': 5, 'text':TEXT}]
@@ -47,7 +52,7 @@ class DatasetTestCase(unittest.TestCase):
         [
             {'business_id': BIZ_ID, 'date': "{0}, {1}".format(TS, TS2)},
             'CHECKIN',
-            [[TS, TS2]]
+            [{'business_id': BIZ_ID, 'timestamps': "{0}, {1}".format(TS, TS2)}]
         ],
         [
             {'business_id': BIZ_ID, 'user_id': USER_ID, 'text': TEXT, 'date': TS},
@@ -55,9 +60,9 @@ class DatasetTestCase(unittest.TestCase):
             [{'business_id': BIZ_ID, 'user_id': USER_ID, 'text': TEXT, 'timestamp': TS}],
         ]
     ])
-    def test_process_dict(self, d, d_type, expected): 
-        self.assertEqual(process_dict(d, d_type), expected)
+    def test_process_dict(self, d, d_type, expected):
+        self.assertEqual(self.batch.process_dict(d, d_type), expected)
 
 
 if __name__ == '__main__':
-        unittest.main()
+    unittest.main()
