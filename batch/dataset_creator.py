@@ -84,7 +84,7 @@ class DatasetCreatorSparkBatch(object):
 
         dfs = [self.create_df_from_file(spark, infile) for infile in args.infiles]
         df = self.join_df_on_business_id(dfs)
-        df.write.json('test_write')
+        df.write.parquet('test_write')
 
         spark.stop()
 
