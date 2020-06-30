@@ -17,7 +17,7 @@ INFILE_TO_TYPE = {
 }
 
 
-class DatasetCreatorSparkBatch(object):
+class BusinessDatasetCreatorSparkBatch(object):
     def match_infile_to_type(self, infile: str) -> str:
         for key in INFILE_TO_TYPE.keys():
             if key in infile:
@@ -31,6 +31,8 @@ class DatasetCreatorSparkBatch(object):
                 'name': d['name'],
                 'city': d['city'],
                 'state': d['state'],
+                'categories': d['categories'],
+                'star_rating': d['stars'],
             }
         elif d_type == 'REVIEW':
             entry = {
@@ -75,19 +77,24 @@ class DatasetCreatorSparkBatch(object):
     		type=str,
     		required=True
     	)
+        parser.add_argument(
+    	    '--outfiles',
+	    	help="output files directory/path/location",
+    		required=True,
+    	)
         return parser.parse_args(sys_args)
 
     def run(self):
         args = self.parse_args(sys.argv[1:])
 
-        spark = SparkSession.builder.appName("DatasetCreatorSparkBatch").getOrCreate()
+        spark = SparkSession.builder.appName("BusinessDatasetCreatorSparkBatch").getOrCreate()
 
         dfs = [self.create_df_from_file(spark, infile) for infile in args.infiles]
         df = self.join_df_on_business_id(dfs)
-        df.write.parquet('test_write')
+        df.write.parquet(args.outfiles)
 
         spark.stop()
 
 
 if __name__ == "__main__":
-    DatasetCreatorSparkBatch().run()
+    BusinessDatasetCreatorSparkBatch().run()

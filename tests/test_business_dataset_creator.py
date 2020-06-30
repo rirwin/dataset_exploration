@@ -1,7 +1,7 @@
 import unittest
 from parameterized import parameterized
 
-from batch.dataset_creator import DatasetCreatorSparkBatch
+from batch.business_dataset_creator import BusinessDatasetCreatorSparkBatch
 
 
 BIZ_ID = 'IXAV123'
@@ -13,17 +13,21 @@ STATE = 'Missouri'
 TS = '2015-08-09 03:14:00'
 TS2 = '2020-03-09 13:14:10'
 TEXT = 'Great Pizza'
+CATS = 'Restaurants, Pizza'
+RTG = 4.5
 
 
-class DatasetTestCase(unittest.TestCase):
+class BusinessDatasetTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.batch = DatasetCreatorSparkBatch()
+        self.batch = BusinessDatasetCreatorSparkBatch()
 
     def test_parse_args(self):
-        infiles = 'business.json review.json tip.json checkin.json'
-        args = self.batch.parse_args(['--infiles'] + infiles.split(' '))
-        self.assertEqual(args.infiles, infiles.split(' '))
+        input_sys_args = ['--infiles', 'business.json', 'review.json', 'tip.json', 'checkin.json']
+        output_sys_args = ['--outfiles', './out/']
+        args = self.batch.parse_args(input_sys_args + output_sys_args)
+        self.assertEqual(args.infiles, input_sys_args[1:])
+        self.assertEqual(args.outfiles, output_sys_args[1])
 
     @parameterized.expand([
         ['business', 's3://bucket/a_business_file1.json', 'BUSINESS'],
@@ -40,9 +44,9 @@ class DatasetTestCase(unittest.TestCase):
 
     @parameterized.expand([
         [
-            {'business_id': BIZ_ID, 'name': NAME, 'city': CITY, 'state': STATE},
+            {'business_id': BIZ_ID, 'name': NAME, 'city': CITY, 'state': STATE, 'categories': CATS, 'stars': RTG},
             'BUSINESS',
-            [{'business_id': BIZ_ID, 'name': NAME, 'city': CITY, 'state': STATE}]
+            [{'business_id': BIZ_ID, 'name': NAME, 'city': CITY, 'state': STATE, 'categories': CATS, 'star_rating': RTG}]
         ],
         [
             {'business_id': BIZ_ID, 'user_id': USER_ID, 'review_id': REVIEW_ID, 'date': TS, 'stars': 5, 'text':TEXT},

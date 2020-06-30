@@ -102,32 +102,39 @@ biz_ids = set([
     "w-ZTkkXefxTEHlgpKA55mQ",
 ])
 spark = SparkSession.builder.appName("FilterDataset").getOrCreate()
-rdd = spark.read.json('/Users/ryanirwin/Downloads/yelp_academic_dataset_tip.json').rdd \
-    .map(lambda d: d) \
-    .filter(lambda d: d['business_id'] in biz_ids)
-
-df = rdd.toDF()
-df.coalesce(1).write.format('json').save('tip_small')
-
-
-rdd = spark.read.json('/Users/ryanirwin/Downloads/yelp_academic_dataset_checkin.json').rdd \
-    .map(lambda d: d) \
-    .filter(lambda d: d['business_id'] in biz_ids)
-
-df = rdd.toDF()
-df.coalesce(1).write.format('json').save('checkin_small')
-
-
-rdd = spark.read.json('/Users/ryanirwin/Downloads/yelp_academic_dataset_review.json').rdd \
-    .map(lambda d: d) \
-    .filter(lambda d: d['business_id'] in biz_ids)
-
-df = rdd.toDF()
-df.coalesce(1).write.format('json').save('review_small')
+#rdd = spark.read.json('/Users/ryanirwin/Downloads/yelp_academic_dataset_tip.json').rdd \
+#    .map(lambda d: d) \
+#    .filter(lambda d: d['business_id'] in biz_ids)
+#
+#df = rdd.toDF()
+#df.coalesce(1).write.format('json').save('tip_small')
+#
+#
+#rdd = spark.read.json('/Users/ryanirwin/Downloads/yelp_academic_dataset_checkin.json').rdd \
+#    .map(lambda d: d) \
+#    .filter(lambda d: d['business_id'] in biz_ids)
+#
+#df = rdd.toDF()
+#df.coalesce(1).write.format('json').save('checkin_small')
+#
+#
+#rdd = spark.read.json('/Users/ryanirwin/Downloads/yelp_academic_dataset_review.json').rdd \
+#    .map(lambda d: d) \
+#    .filter(lambda d: d['business_id'] in biz_ids)
+#
+#df = rdd.toDF()
+#df.coalesce(1).write.format('json').save('review_small')
 
 # biz attributes is a mess
 rdd = spark.read.json('/Users/ryanirwin/Downloads/yelp_academic_dataset_business.json').rdd \
-    .map(lambda d: {'business_id': d['business_id'], 'name': d['name'], 'city': d['city'], 'state': d['state']}) \
+    .map(lambda d: {
+        'business_id': d['business_id'],
+        'name': d['name'],
+        'city': d['city'],
+        'state': d['state'],
+        'categories': d['categories'],
+        'stars': d['stars']
+    }) \
     .filter(lambda d: d['business_id'] in biz_ids)
 
 df = rdd.toDF()
