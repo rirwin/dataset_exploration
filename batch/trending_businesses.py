@@ -5,7 +5,7 @@ from pyspark.sql import Row
 
 ts_format = '%Y-%m-%d %H:%M:%S'
 spark = SparkSession.builder.appName("ReaderSparkBatch").getOrCreate()
-sdf = spark.read.parquet('test_write/')
+sdf = spark.read.parquet('test_business_out/')
 
 sdf.show(n=3, vertical=True)
 

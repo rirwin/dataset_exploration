@@ -15,6 +15,14 @@ run_dev_test: virtualenv
 		    test_files/tip_test.json test_files/checkin_test.json \
         --outfiles test_business_out
 	virtualenv_run/bin/python -m batch.parquet_reader test_business_out
+	virtualenv_run/bin/python -m batch.trending_businesses
+
+run_dev_test_user:
+	rm -rf test_user_out/
+	virtualenv_run/bin/python -m batch.user_dataset_creator \
+		--infiles test_files/user_test.json test_files/review_test.json test_files/tip_test.json \
+		--outfiles test_user_out
+	virtualenv_run/bin/python -m batch.parquet_reader test_user_out
 
 run_small_test: virtualenv
 	rm -rf test_business_write/
