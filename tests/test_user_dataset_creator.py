@@ -1,42 +1,38 @@
 import unittest
 from parameterized import parameterized
 
-from batch.business_dataset_creator import BusinessDatasetCreatorSparkBatch
+from batch.user_dataset_creator import UserDatasetCreatorSparkBatch
 
 
 BIZ_ID = 'IXAV123'
 USER_ID = 'UXAV456'
 REVIEW_ID = 'RXAV789'
-NAME = 'Imos Pizza'
+NAME = 'Tony'
 CITY = 'St. Louis'
 STATE = 'Missouri'
 TS = '2015-08-09 03:14:00'
 TS2 = '2020-03-09 13:14:10'
 TEXT = 'Great Pizza'
 CATS = 'Restaurants, Pizza'
-RTG = 4.5
+REV_CNT = 10
+AVG_RTG = 4.5
 
 
-class BusinessDatasetTestCase(unittest.TestCase):
+class UserDatasetTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.batch = BusinessDatasetCreatorSparkBatch()
+        self.batch = UserDatasetCreatorSparkBatch()
 
     @parameterized.expand([
         [
-            {'business_id': BIZ_ID, 'name': NAME, 'city': CITY, 'state': STATE, 'categories': CATS, 'stars': RTG},
-            'BUSINESS',
-            [{'business_id': BIZ_ID, 'name': NAME, 'city': CITY, 'state': STATE, 'categories': CATS, 'star_rating': RTG}]
+            {'user_id': USER_ID, 'name': NAME, 'review_count': REV_CNT, 'average_stars': AVG_RTG},
+            'USER',
+            [{'user_id': USER_ID, 'name': NAME, 'review_count': REV_CNT, 'average_rating': AVG_RTG}]
         ],
         [
             {'business_id': BIZ_ID, 'user_id': USER_ID, 'review_id': REVIEW_ID, 'date': TS, 'stars': 5, 'text':TEXT},
             'REVIEW',
             [{'business_id': BIZ_ID, 'user_id': USER_ID, 'review_id': REVIEW_ID, 'timestamp': TS, 'star_rating': 5, 'text':TEXT}]
-        ],
-        [
-            {'business_id': BIZ_ID, 'date': "{0}, {1}".format(TS, TS2)},
-            'CHECKIN',
-            [{'business_id': BIZ_ID, 'timestamps': "{0}, {1}".format(TS, TS2)}]
         ],
         [
             {'business_id': BIZ_ID, 'user_id': USER_ID, 'text': TEXT, 'date': TS},

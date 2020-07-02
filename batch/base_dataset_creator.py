@@ -28,12 +28,12 @@ class BaseDatasetCreatorSparkBatch(object):
                 return INFILE_TO_TYPE[key]
         raise Exception('Invalid input file')
 
-    def create_df_from_file(self, spark: SparkSession, infile: str, key_column: str) -> DataFrame:
+    def create_df_from_file(self, spark: SparkSession, infile: str) -> DataFrame:
         d_type = self.match_infile_to_type(infile)
         rdd = spark.read.json(infile).rdd \
-            .map(lambda d: (d[key_column], self.process_dict(d, d_type))) \
+            .map(lambda d: (d[self.key_column], self.process_dict(d, d_type))) \
             .reduceByKey(lambda data1, data2: data1 + data2)
-        return spark.createDataFrame(rdd, [key_column, d_type])
+        return spark.createDataFrame(rdd, [self.key_column, d_type])
 
     def join_df_on(self, dfs: List[DataFrame], join_column: str) -> DataFrame:
         return reduce(lambda df1, df2: df1.join(df2, [join_column], 'left_outer'), dfs)
@@ -58,9 +58,9 @@ class BaseDatasetCreatorSparkBatch(object):
     def run(self):
         self.parse_args(sys.argv[1:])
 
-        spark = SparkSession.builder.appName("DatasetCreatorSparkBatch").getOrCreate()
+        spark = SparkSession.builder.appName(self.__class__.__name__).getOrCreate()
 
-        dfs = [self.create_df_from_file(spark, infile, self.key_column) for infile in self.args.infiles]
+        dfs = [self.create_df_from_file(spark, infile) for infile in self.args.infiles]
         df = self.join_df_on(dfs, self.key_column)
         df.write.parquet(self.args.outfiles)
 
