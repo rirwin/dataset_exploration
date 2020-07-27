@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 
-from batch.base_dataset_creator import BaseDatasetCreatorSparkBatch
+from batch.base_dataset_creator import BaseDatasetCreatorSparkBatch  # type: ignore
 
 
 class UserDatasetCreatorSparkBatch(BaseDatasetCreatorSparkBatch):

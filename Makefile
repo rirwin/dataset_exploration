@@ -3,8 +3,8 @@ virtualenv:
 	virtualenv_run/bin/pip install -r requirements.txt
 
 test: virtualenv
-	python -m tests.test_business_dataset_creator 
-	mypy batch/business_dataset_creator.py
+	python -m unittest discover tests/
+	mypy batch/*.py
 	coverage run --source=batch/ -m unittest
 	coverage report -m
 

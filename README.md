@@ -1,5 +1,11 @@
 TODO:
 
-create user_dataset_creator
-refactor/unit tests user_dataset business_dataset, get spark & run test coverage
-recommendation strategy ... 
+- take the biz categories from the user biz interactions and create normalized feature vector per user
+    re-write or write new user vector.
+    look for trending businesses with categories matching to user
+- recommendation strategy, collaborative filtering 
+- refactor unit & itests 
+  - get spark runs twice 
+  - split out tests
+  - make parquet reader part of itest
+

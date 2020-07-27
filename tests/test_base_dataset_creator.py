@@ -1,3 +1,4 @@
+import mock
 import unittest
 from parameterized import parameterized
 
@@ -8,6 +9,10 @@ class BaseDatasetTestCase(unittest.TestCase):
 
     def setUp(self):
         self.batch = BaseDatasetCreatorSparkBatch()
+
+    def test_process_dict_unimplemented(self):
+        with self.assertRaises(NotImplementedError):
+            self.batch.process_dict({}, "")
 
     def test_parse_args(self):
         input_sys_args = ['--infiles', 'business.json', 'review.json', 'tip.json', 'checkin.json']

@@ -1,14 +1,13 @@
 import datetime
 from typing import List
 
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession  # type: ignore
 from pyspark.sql import Row
 
 ts_format = '%Y-%m-%d %H:%M:%S'
 
 
 class TrendingBusinessesSparkBatch():
-
 
     def run(self):
         spark = SparkSession.builder.appName("ReaderSparkBatch").getOrCreate()

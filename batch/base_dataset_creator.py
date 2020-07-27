@@ -21,6 +21,10 @@ INFILE_TO_TYPE = {
 class BaseDatasetCreatorSparkBatch(object):
 
     args = None
+    key_column = None
+
+    def process_dict(self, d: Dict[str, str], d_type: str) -> List:
+        raise NotImplementedError
 
     def match_infile_to_type(self, infile: str) -> str:
         for key in INFILE_TO_TYPE.keys():
@@ -38,7 +42,7 @@ class BaseDatasetCreatorSparkBatch(object):
     def join_df_on(self, dfs: List[DataFrame], join_column: str) -> DataFrame:
         return reduce(lambda df1, df2: df1.join(df2, [join_column], 'left_outer'), dfs)
 
-    def parse_args(self, sys_args: List[str]) -> argparse.Namespace:
+    def parse_args(self, sys_args: List[str]):
         parser = argparse.ArgumentParser()
         parser.add_argument(
     	    '--infiles',
@@ -55,10 +59,12 @@ class BaseDatasetCreatorSparkBatch(object):
     	)
         self.args = parser.parse_args(sys_args)
 
+    def get_spark_session(self) -> SparkSession:
+        return SparkSession.builder.appName(self.__class__.__name__).getOrCreate()
+
     def run(self):
         self.parse_args(sys.argv[1:])
-
-        spark = SparkSession.builder.appName(self.__class__.__name__).getOrCreate()
+        spark = self.get_spark_session()
 
         dfs = [self.create_df_from_file(spark, infile) for infile in self.args.infiles]
         df = self.join_df_on(dfs, self.key_column)
