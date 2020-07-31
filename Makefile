@@ -18,6 +18,7 @@ run_dev_test_business: virtualenv
 	virtualenv_run/bin/python -m batch.business_structured_features \
 		--infiles test_business_unstructured_out \
 		--outfiles test_business_structured_out
+	virtualenv_run/bin/python -c "from dataset_client.business_client import BusinessClient; print(BusinessClient().get_df().head())"
 
 run_dev_test_user: virtualenv
 	rm -rf test_user_unstructured_out/
@@ -28,6 +29,7 @@ run_dev_test_user: virtualenv
 	virtualenv_run/bin/python -m batch.user_structured_features \
 		--infiles test_user_unstructured_out \
 		--outfiles test_user_structured_out
+	virtualenv_run/bin/python -c "from dataset_client.user_client import UserClient; print(UserClient().get_df().head())"
 
 run_small_test: virtualenv
 	rm -rf test_business_write/
