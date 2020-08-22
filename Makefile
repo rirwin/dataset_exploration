@@ -31,14 +31,26 @@ run_dev_test_user: virtualenv
 		--outfiles test_user_structured_out
 	virtualenv_run/bin/python -c "from dataset_client.user_client import UserClient; print(UserClient().get_df().head())"
 
-run_small_test: virtualenv
-	rm -rf test_business_write/
+run_dev_small_business: virtualenv 
+	rm -rf test_business_unstructured_out/
+	rm -rf test_business_structured_out/
 	virtualenv_run/bin/python -m batch.business_dataset_creator \
 		--infiles test_files/business_small.json test_files/review_small.json \
-		          test_files/tip_small.json test_files/checkin_small.json \
-	virtualenv_run/bin/python -m batch.parquet_reader test_business_out
+		    test_files/tip_small.json test_files/checkin_small.json \
+        --outfiles test_business_unstructured_out
+	virtualenv_run/bin/python -m batch.business_structured_features \
+		--infiles test_business_unstructured_out \
+		--outfiles test_business_structured_out
+	virtualenv_run/bin/python -c "from dataset_client.business_client import BusinessClient; print(BusinessClient().get_df().head())"
 
-# TODO python black
+start_es: virtualenv
+	virtualenv_run/bin/docker-compose -f docker/elasticsearch/docker-compose.yml up -d
+
+stop_es: virtualenv
+	virtualenv_run/bin/docker-compose -f docker/elasticsearch/docker-compose.yml down 
+
+load_es_review_search: virtualenv
+	virtualenv_run/bin/python -m batch.load_es_review_search
 
 clean:
 	rm -f .coverage

@@ -1,0 +1,8 @@
+docker-compose up
+
+curl -XPUT 'localhost:9200/text/article/1?pretty'  -H 'Content-Type: application/json' -d '{ "title": "He went", "random_text":  "He went such dare good fact. The small own seven saved man age."}'
+curl -XPUT 'localhost:9200/text/article/2?pretty'  -H 'Content-Type: application/json' -d '{"title": "He oppose", "random_text":  "He oppose at thrown desire of no. Announcing impression unaffected day his are unreserved indulgence."}'
+curl -XPUT 'localhost:9200/text/article/3?pretty'  -H 'Content-Type: application/json' -d '{ "title": "Repulsive questions",  "random_text": "Repulsive questions contented him few extensive supported."}'
+curl -XPUT 'localhost:9200/text/article/4?pretty'  -H 'Content-Type: application/json' -d '{ "title": "Old education", "random_text": "Old education him departure any arranging one prevailed."}'
+curl -XGET 'localhost:9200/text/article/_search?pretty'  -H 'Content-Type: application/json' -d '{ "query": { "match": {  "random_text": "him departure"  }}}'
+curl -XGET 'localhost:9200/text/article/_search?pretty' -H 'Content-Type: application/json' -d' { "query": { "match":  { "random_text": { "query": "him departure", "fuzziness": "2" } } }}'
